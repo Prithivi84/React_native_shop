@@ -7,27 +7,46 @@ import {
   Modal,
   Button,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Rating } from "@kolking/react-native-rating";
 import ProductDetailModal from "../../components/ProductDetailModal.js";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setProducts,
+  incrementQuantity,
+  decrementQuantity,
+} from "../../components/redux/productStore.js";
 
 export default function home() {
-  const [products, setProducts] = useState([]);
+  const products = useSelector((state) => state.product.products);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const dispatch = useDispatch();
+
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
+    setLoading(true);
     extract();
   }, []);
 
-  const extract = () => {
-    fetch("https://fakestoreapi.com/products")
+  const extract = async () => {
+    // setLoading(true);
+    await fetch("https://fakestoreapi.com/products")
       .then(async (res) => {
         // console.log(res.json().);
         const data = await res.json();
+        // console.log(loading);
         // console.log(data.map((i) => ({ ...i, quantity: 0 })));
-        setProducts(data.map((i) => ({ ...i, quantity: 1 })));
+        dispatch(setProducts(data.map((i) => ({ ...i, quantity: 1 }))));
+      })
+      .then((r) => {
+        setLoading(false);
+        // console.log(loading);
+        // console.log("product", products);
       })
       .catch((e) => {
         console.log("e", e);
@@ -86,14 +105,6 @@ export default function home() {
 
           {/* <Text>Rs. {item.price}</Text> */}
         </View>
-        {/* <Button
-          title="+"
-          onPress={() => dispatch(incrementQuantity(item.id))}
-        />
-        <Button
-          title="-"
-          onPress={() => dispatch(decrementQuantity(item.id))}
-        /> */}
       </View>
     </TouchableOpacity>
   );
@@ -112,11 +123,25 @@ export default function home() {
       >
         <Text style={{ fontWeight: "bold", fontSize: 30 }}>Shopping</Text>
       </View>
-      <FlatList
-        data={products}
-        keyExtractor={(item) => item?.id?.toString()}
-        renderItem={Item}
-      />
+      {loading ? (
+        <View
+          style={{
+            flex: 1,
+            width: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
+        <FlatList
+          data={products}
+          keyExtractor={(item) => item?.id?.toString()}
+          renderItem={Item}
+          refreshing
+        />
+      )}
 
       {selectedProduct && (
         <Modal

@@ -7,15 +7,57 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  ToastAndroid,
 } from "react-native";
-import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 import Entypo from "@expo/vector-icons/Entypo";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Rating } from "@kolking/react-native-rating";
+import { addToCart } from "../components/redux/cart";
 
 export default function ProductDetailModal({ product, modalView }) {
   useEffect(() => {
     console.log("product", product);
   }, []);
+
+  const dispatch = useDispatch();
+  const [quantity, setQuantity] = useState(1);
+
+  const decrement = () => {
+    if (quantity > 1) {
+      setQuantity(quantity - 1);
+      // dispatch(decrementQuantity(product?.id));
+    }
+  };
+
+  const increment = () => {
+    setQuantity(quantity + 1);
+    // dispatch(incrementQuantity(product?.id));
+  };
+
+  const addCart = async () => {
+    setTimeout(() => {
+      dispatch(
+        addToCart({
+          id: product.id,
+          title: product.title,
+          quantity: quantity,
+          price: product?.price,
+          description: product?.description,
+          category: product?.category,
+          image: product?.image,
+          rating: {
+            rate: product?.rating?.rate,
+            count: product?.rating?.count,
+          },
+        })
+      );
+    }, 100);
+
+    ToastAndroid.show("Cart Added", ToastAndroid.LONG);
+    modalView();
+  };
 
   return (
     <ScrollView>
@@ -33,7 +75,6 @@ export default function ProductDetailModal({ product, modalView }) {
         <Entypo name="squared-cross" size={40} color="black" />
         <Text style={{ color: "gray", fontSize: 10 }}>Close Modal</Text>
       </Pressable>
-
       <View style={styles.modalContainer}>
         <View style={styles.modalImage}>
           <Image
@@ -68,7 +109,29 @@ export default function ProductDetailModal({ product, modalView }) {
           </View>
         </View>
 
-        <View>
+        <View style={{ flexDirection: "row", flex: 1, alignItems: "center" }}>
+          <Text style={{ marginRight: 20, fontSize: 16 }}>Quantity:</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              flex: 1,
+              gap: 20,
+              alignItems: "center",
+            }}
+          >
+            <TouchableOpacity onPress={decrement}>
+              <View style={styles.button}>
+                <FontAwesome name="minus" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+            <Text>{quantity}</Text>
+            <TouchableOpacity onPress={increment}>
+              <View style={styles.button}>
+                <FontAwesome name="plus" size={24} color="black" />
+              </View>
+            </TouchableOpacity>
+          </View>
+
           {/* <Button
           title="+"
           onPress={() => dispatch(incrementQuantity(item.id))}
@@ -79,6 +142,13 @@ export default function ProductDetailModal({ product, modalView }) {
         /> */}
         </View>
       </View>
+      {/* add cart */}
+      <TouchableOpacity onPress={addCart}>
+        <View style={styles.cartButton}>
+          <Text>Add to Cart</Text>
+        </View>
+      </TouchableOpacity>
+      {/* cart end */}
     </ScrollView>
   );
 }
@@ -124,5 +194,18 @@ const styles = StyleSheet.create({
 
   dSize: {
     fontSize: 20,
+  },
+
+  button: {
+    padding: 5,
+    paddingHorizontal: 10,
+    backgroundColor: "#dddddd",
+    borderRadius: 10,
+  },
+
+  cartButton: {
+    marginHorizontal: 20,
+    padding: 20,
+    backgroundColor: "#80d9e1",
   },
 });

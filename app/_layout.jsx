@@ -1,6 +1,8 @@
 import { View, Text } from "react-native";
 import React, { useEffect } from "react";
-import { Slot, useRouter, useSegments } from "expo-router";
+import { Slot, Stack, useRouter, useSegments } from "expo-router";
+import { Provider } from "react-redux";
+import { store } from "../components/redux/config";
 
 const MainLayout = () => {
   const segments = useSegments();
@@ -19,5 +21,9 @@ const MainLayout = () => {
 };
 
 export default function _layout() {
-  return <MainLayout />;
+  return (
+    <Provider store={store}>
+      <MainLayout />
+    </Provider>
+  );
 }
